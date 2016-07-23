@@ -34,6 +34,6 @@ public class RxTest3 {
         System.out.println("cast start");
         Observable.just("hello cast")
                 .map(s -> s.hashCode())
-                .subscribe(s -> System.out.println(Integer.parseInt(s)));
+                .subscribe(s -> System.out.println(Integer.toString(s)));
     }
 }

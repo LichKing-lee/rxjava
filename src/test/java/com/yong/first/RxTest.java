@@ -2,9 +2,11 @@ package com.yong.first;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import org.omg.PortableServer.THREAD_POLICY_ID;
 import rx.Observable;
 import rx.Scheduler;
 import rx.Subscriber;
+import rx.functions.Action1;
 import rx.functions.Func0;
 import rx.schedulers.Schedulers;
 
@@ -14,88 +16,95 @@ import rx.schedulers.Schedulers;
 public class RxTest {
     @Test
     @Ignore
-    public void just_test(){
-        System.out.println("Observable create");
-        Observable<String> observable = Observable.just("개미");
-        System.out.println("do subscribe");
-        observable.subscribe(
-                new Subscriber<String>() {
-                    public void onCompleted() {
-                        System.out.println("complete");
-                    }
-
-                    public void onError(Throwable throwable) {
-                        System.out.println("error :: " + throwable.getMessage());
-                    }
-
-                    public void onNext(String s) {
-                        System.out.println("next :: " + s);
+    public void create_test(){
+        Observable<String> observable = Observable.create(
+                new Observable.OnSubscribe<String>() {
+                    @Override
+                    public void call(Subscriber<? super String> subscriber) {
+                        System.out.println("Hello Create");
+                        subscriber.onNext("next!");
                     }
                 }
         );
+
+        observable.subscribe(new Subscriber<String>() {
+            @Override
+            public void onCompleted() {
+
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+
+            }
+
+            @Override
+            public void onNext(String s) {
+                System.out.println(s);
+            }
+        });
+    }
+
+    @Test
+    @Ignore
+    public void just_test(){
+        Observable<String> observable = Observable.just("Hello Just");
+        observable.subscribe(new Action1<String>() {
+            @Override
+            public void call(String s) {
+                System.out.println(s);
+            }
+        });
     }
 
     @Test
     @Ignore
     public void defer_test(){
-        System.out.println("Observable Create");
-        Observable<String> observable = Observable.defer(new Func0<Observable<String>>() {
-            public Observable<String> call() {
-                System.out.println("defer call");
-                //return Observable.just("hello rx");
-                return null;
-            }
-        });
-
-        System.out.println("do subscribe");
-
-        observable.subscribe(
-                new Subscriber<String>() {
-                    public void onCompleted() {
-                        System.out.println("complete");
-                    }
-
-                    public void onError(Throwable throwable) {
-                        System.out.println(throwable.getMessage());
-                    }
-
-                    public void onNext(String s) {
-                        System.out.println(" ===> " + s);
+        System.out.println(Thread.currentThread().getName() + "11");
+        Observable<String> observable = Observable.defer(
+                new Func0<Observable<String>>() {
+                    @Override
+                    public Observable<String> call() {
+                        System.out.println(Thread.currentThread().getName() + "22");
+                        return Observable.just("Hello Defer");
                     }
                 }
         );
-    }
+        System.out.println(Thread.currentThread().getName() + "33");
 
-    @Test
-    @Ignore
-    public void async_test(){
-        System.out.println("Observable Create");
+        observable.subscribeOn(Schedulers.computation())
+                .observeOn(Schedulers.newThread())
+                .subscribe(new Action1<String>() {
+                    @Override
+                    public void call(String s) {
+                        System.out.println(Thread.currentThread().getName() + "44");
+                    }
+                });
+        System.out.println(Thread.currentThread().getName() + "55");
 
-        Observable<String> observable = Observable.defer(new Func0<Observable<String>>() {
-            public Observable<String> call() {
-                System.out.println(Thread.currentThread().getName() + ", defer function call");
-                return Observable.just("Hello RX");
+        observable.subscribe(new Action1<String>() {
+            @Override
+            public void call(String s) {
+                System.out.println(Thread.currentThread().getName() + "66");
             }
         });
 
-        System.out.println(Thread.currentThread().getName() + ", gogogo");
+        observable.observeOn(Schedulers.computation());
+    }
 
-        observable.subscribeOn(Schedulers.computation())
-                    .observeOn(Schedulers.newThread())
-                    .subscribe(new Subscriber<String>() {
-                        public void onCompleted() {
-                            System.out.println(Thread.currentThread().getName() + ", Complete");
-                        }
+    @Test
+    public void defer_test_2(){
+        System.out.println(Thread.currentThread().getName() + "11");
 
-                        public void onError(Throwable throwable) {
-                            System.out.println("Error");
-                        }
+        Observable<String> observable = Observable.just(Thread.currentThread().getName() + "22");
 
-                        public void onNext(String s) {
-                            System.out.println(Thread.currentThread().getName() + ", Next");
-                        }
-                    });
-
-        System.out.println(Thread.currentThread().getName() + ", final");
+        observable.observeOn(Schedulers.computation())
+                .subscribeOn(Schedulers.newThread())
+                .subscribe(new Action1<String>() {
+                    @Override
+                    public void call(String s) {
+                        System.out.println(Thread.currentThread().getName() + "33 [" + s + "]");
+                    }
+                });
     }
 }
