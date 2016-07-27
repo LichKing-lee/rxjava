@@ -1,10 +1,8 @@
-package com.yong.first;
+package com.yong.rxjava;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.omg.PortableServer.THREAD_POLICY_ID;
 import rx.Observable;
-import rx.Scheduler;
 import rx.Subscriber;
 import rx.functions.Action1;
 import rx.functions.Func0;

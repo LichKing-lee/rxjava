@@ -1,4 +1,4 @@
-package com.yong.first;
+package com.yong.rxjava;
 
 import org.junit.Test;
 import rx.Observable;
